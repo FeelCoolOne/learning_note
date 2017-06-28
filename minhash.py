@@ -5,6 +5,15 @@ minhash
 import math
 import numpy as np
 
+'''
+    r = 3, b = 100 and j(X,y) >= 0.4
+    it could make in same group with confidence 99.86%
+'''
+r = 3
+b = 100
+n_hash = r * b
+n_voca = 50000
+
 
 def is_prime(n):
     if n <= 1:
@@ -14,15 +23,9 @@ def is_prime(n):
             return False
     return True
 
-r = 3
-b = 100
-n_hash = r * b
-n_voca = 50000
-
-# hash function: (a * x + b) % c
-
 
 def create_hash_funcs():
+    # hash function: (a * x + b) % c
     t = n_voca + 1
     result = list()
     while len(result) != n_hash:
@@ -87,6 +90,11 @@ def sim(phrase):
     for i in range(b):
         for j in range(n_doc):
             # need check
-            t = map(lambda i: vacab[i], phrase[(i * r): (i * r + 2), j])
+            t = map(lambda i: vacab[i], phrase[(i * r): ((i + 1) * r), j])
             tmp[i, j] = hash(''.join(t))
-    # remain check sim
+    return tmp
+
+
+def get_sim_docs(sim, i):
+    tmp = np.where(sim.T == sim[:, i])
+    return set(map(lambda x: x[1], tmp)) - set(i)
