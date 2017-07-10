@@ -23,7 +23,7 @@ def make_phrase(data, type_=64):
 
 
 def hamming_distance(phrase1, phrase2):
-    tmp = (phrase1 | phrase2) - (phrase1 & phrase2)
+    tmp = phrase1 ^ phrase2
     distance = 0
     while tmp > 0:
         distance += 1
