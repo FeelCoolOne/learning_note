@@ -6,6 +6,29 @@ import redis
 import json
 
 
+def map2std(config, model=None):
+    """Get map from normal id to std id.
+    """
+    SRCS = ["pp_tencent", "pp_iqiyi", "pp_mgtv", ]
+
+    def get_std_id(doc):
+        ids = [doc.get(src, {}).get("videoId", None) for src in SRCS]
+        for id_ in ids:
+            if id_:
+                return id_, ids
+
+    col = get_collection(config)
+    projection = {"{}.videoId".format(m): 1 for m in SRCS}
+    filter_ = dict() if not model else {"$or": [{"{}.model".format(m): model} for m in SRCS]}
+    docs = col.find(filter=filter_, projection=projection)
+    map2std = dict()
+    for doc in docs:
+        doc = dict(doc)
+        id_, ids = get_std_id(doc)
+        map2std.update({t: id_ for t in ids if t is not None})
+    return map2std
+
+
 def get_redis_client(config):
     cf = ConfigParser.ConfigParser()
     cf.read(config)
@@ -16,8 +39,7 @@ def get_redis_client(config):
 
 
 def get_collection(config):
-    """
-    get connection from mongoDB
+    """Get connection from mongoDB
     """
     cf = ConfigParser.ConfigParser()
     cf.read(config)
@@ -35,10 +57,10 @@ def get_collection(config):
     return collection
 
 
-def get_logger(filename, debug=False):
+def get_logger(filename, name="log", debug=False):
     format = '''[ %(levelname)s %(asctime)s @ %(process)d] (%(filename)s:%(lineno)d) - %(message)s'''
     formatter = logging.Formatter(format)
-    logger = logging.getLogger("vav_result")
+    logger = logging.getLogger(name)
     handler = logging.FileHandler(filename, 'a')
     logger.setLevel(logging.INFO)
     handler.setLevel(logging.INFO)
