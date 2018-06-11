@@ -3,6 +3,7 @@
 *.dat
 *.xlsx
 *.npy
+*.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
